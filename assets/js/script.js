@@ -1,346 +1,299 @@
-// Lógica de Troca de Tema
-const themeToggle = document.getElementById('theme-toggle');
-const body = document.body;
+/**
+ * script.js - Inteligência da Landing Page Mar de Carol
+ * Gerencia o carregamento via Google Sheets, filtros, favoritos e redirecionamentos.
+ */
 
-// Verificar preferência salva ou do sistema
-const savedTheme = localStorage.getItem('theme');
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+// --- CONFIGURAÇÃO ---
+// Substitua URL_DA_PLANILHA pelo link do seu CSV (Publicar na Web -> Valores separados por vírgula .csv)
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQZ1xVGIGNd7LrPMDWa3uFM_i9MVgzj1LmqKCqZrVUM3F203ZPJ4hWugKGUNaNMsmRhn__bVHfeGk_w/pub?output=csv';
 
-if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-    body.classList.add('dark-mode');
-}
-
-themeToggle.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    const isDark = body.classList.contains('dark-mode');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-
-    // Feedback tátil visual
-    themeToggle.style.transform = 'scale(0.9) rotate(-15deg)';
-    setTimeout(() => {
-        themeToggle.style.transform = '';
-    }, 200);
-});
-
-// Pequeno script para feedback de clique e SEO (no-follow tracking)
-document.querySelectorAll('.btn-afiliado').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const toast = document.getElementById('copy-toast');
-        if (toast) {
-            toast.style.opacity = '1';
-            setTimeout(() => { toast.style.opacity = '0'; }, 2000);
-        }
-    });
-});
-
-// Lógica de Lazy Loading com Intersection Observer
-const lazyObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const cardImg = entry.target;
-            const bgImage = getComputedStyle(cardImg).backgroundImage;
-
-            if (bgImage && bgImage !== 'none' && !bgImage.includes('linear-gradient')) {
-                const url = bgImage.match(/url\(["']?([^"']+)["']?\)/)?.[1];
-                if (url) {
-                    const img = new Image();
-                    img.onload = () => {
-                        cardImg.classList.remove('skeleton');
-                        observer.unobserve(cardImg);
-                    };
-                    img.src = url;
-                } else {
-                    cardImg.classList.remove('skeleton');
-                    observer.unobserve(cardImg);
-                }
-            } else {
-                cardImg.classList.remove('skeleton');
-                observer.unobserve(cardImg);
-            }
-        }
-    });
-}, {
-    rootMargin: '100px'
-});
-
-document.querySelectorAll('.card-img').forEach(img => {
-    lazyObserver.observe(img);
-});
-
-// Lógica de Filtros e Busca Combinados
-const searchInput = document.getElementById('search-input');
-const chips = document.querySelectorAll('.chip');
-const cards = document.querySelectorAll('.card');
-
-function filterProducts() {
-    const searchText = searchInput.value.toLowerCase().trim();
-    const activeStoreChip = document.querySelector('.chip.active');
-    const storeFilter = activeStoreChip ? activeStoreChip.getAttribute('data-filter') : null;
-
-    const activeCatChip = document.querySelector('.chip-cat.active');
-    const catFilter = activeCatChip ? activeCatChip.getAttribute('data-cat') : 'all';
-
-    const favorites = JSON.parse(localStorage.getItem('mdecarol_favorites') || '[]');
-
-    cards.forEach(card => {
-        const titleElement = card.querySelector('h3');
-        const title = titleElement.innerText.toLowerCase();
-        const store = card.getAttribute('data-store');
-        const cat = card.getAttribute('data-category') || '';
-
-        const matchesSearch = title.includes(searchText);
-        let matchesStore = !storeFilter || store === storeFilter;
-        let matchesCat = catFilter === 'all' || cat.includes(catFilter);
-
-        if (storeFilter === 'favorites') {
-            matchesStore = favorites.includes(titleElement.innerText);
-        }
-
-        if (matchesSearch && matchesStore && matchesCat) {
-            card.classList.remove('hidden');
-        } else {
-            card.classList.add('hidden');
-        }
-    });
-}
-
-if (searchInput) {
-    searchInput.addEventListener('input', filterProducts);
-}
-
-chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-        const isAlreadyActive = chip.classList.contains('active');
-        chips.forEach(c => c.classList.remove('active'));
-        if (!isAlreadyActive) {
-            chip.classList.add('active');
-        }
-        filterProducts();
-    });
-});
-
-document.querySelectorAll('.chip-cat').forEach(chip => {
-    chip.addEventListener('click', () => {
-        document.querySelectorAll('.chip-cat').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        filterProducts();
-    });
-});
-
-// Lógica do Botão Voltar ao Topo
-const backToTopBtn = document.getElementById('back-to-top');
-
-window.addEventListener('scroll', () => {
-    if (backToTopBtn) {
-        if (window.pageYOffset > 300) {
-            backToTopBtn.classList.add('show');
-        } else {
-            backToTopBtn.classList.remove('show');
-        }
+// Produtos de Backup (Exibidos se a planilha falhar ou estiver carregando)
+const FALLBACK_PRODUCTS = [
+    {
+        LinkImagem: 'https://m.media-amazon.com/images/I/61RV6khFSQL._AC_SL1000_.jpg',
+        Loja: 'Amazon',
+        Categoria: 'tecnologia',
+        Badge: 'Mais Vendido',
+        BadgeTipo: 'venda',
+        Titulo: 'Smart TV Multi 50" 4K Google TV',
+        PrecoAtual: '2.849',
+        PrecoAntigo: '3.299',
+        Expiry: '2026-12-31T23:59:59',
+        LinkReal: 'https://www.amazon.com.br/Smart-Multi-Compat%C3%ADvel-Alexa-Google/dp/B0FLRC6T9L'
     }
+];
+
+// --- INICIALIZAÇÃO ---
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    loadProducts(); // Inicia o carregamento dinâmico
+    initBackToTop();
+    initSearch();
 });
 
-if (backToTopBtn) {
-    backToTopBtn.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
+// --- CARREGAMENTO DE PRODUTOS ---
+async function loadProducts() {
+    const wrapper = document.getElementById('ofertas-wrapper');
+
+    try {
+        // 1. Tentar buscar dados da planilha
+        const response = await fetch(SHEET_URL);
+        if (!response.ok) throw new Error('Sheet not accessible');
+
+        const csvData = await response.text();
+        const products = parseCSV(csvData);
+
+        if (products.length > 0) {
+            renderProducts(products);
+        } else {
+            renderProducts(FALLBACK_PRODUCTS);
+        }
+    } catch (error) {
+        console.warn('Erro ao carregar planilha, usando backup:', error);
+        renderProducts(FALLBACK_PRODUCTS);
+    }
+}
+
+function parseCSV(csv) {
+    const lines = csv.split('\n');
+    const result = [];
+    const headers = lines[0].split(',');
+
+    for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const obj = {};
+        const currentline = lines[i].split(',');
+
+        headers.forEach((header, index) => {
+            obj[header.trim()] = currentline[index]?.trim();
+        });
+        result.push(obj);
+    }
+    return result;
+}
+
+function renderProducts(products) {
+    const wrapper = document.getElementById('ofertas-wrapper');
+    wrapper.innerHTML = ''; // Limpa loader
+
+    products.forEach(p => {
+        const card = createProductCard(p);
+        wrapper.appendChild(card);
+    });
+
+    // Re-inicializa sistemas que dependem dos cards
+    initFavorites();
+    initLinkCloaking();
+    initLazyLoading();
+    updateTimers();
+}
+
+function createProductCard(p) {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.setAttribute('data-store', p.Loja.toLowerCase().replace(' ', ''));
+    div.setAttribute('data-category', p.Categoria.toLowerCase());
+
+    const storeIcon = getStoreIcon(p.Loja);
+    const badgeHtml = p.Badge ? `<div class="promo-badge badge-${p.BadgeTipo}"><i class="fas fa-bolt"></i> ${p.Badge}</div>` : '';
+    const expiryHtml = p.Expiry ? `
+        <div class="countdown-container pulse-timer" data-expiry="${p.Expiry}">
+            <span class="countdown-label"><i class="fas fa-clock"></i> Expira em:</span>
+            <span class="countdown-values">--:--:--</span>
+        </div>` : '';
+
+    div.innerHTML = `
+        <div class="card-img skeleton" style="background-image: url('${p.LinkImagem}')">
+            <button class="btn-favorite" aria-label="Adicionar aos favoritos">
+                <i class="fas fa-heart"></i>
+            </button>
+            ${badgeHtml}
+            <span class="card-tag">${storeIcon} ${p.Loja}</span>
+        </div>
+        <div class="card-content">
+            <h3>${p.Titulo}</h3>
+            <div class="price">R$ ${p.PrecoAtual} ${p.PrecoAntigo ? `<small>R$ ${p.PrecoAntigo}</small>` : ''}</div>
+            ${expiryHtml}
+            <a href="#" class="btn-afiliado ${p.Loja.toLowerCase().replace(' ', '')} btn-cloak" 
+               data-url="${p.LinkReal}" data-store-name="${p.Loja}">
+               ${storeIcon} VER OFERTA NA ${p.Loja.toUpperCase()}
+            </a>
+            <div class="share-actions">
+                <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')">
+                    <i class="fab fa-telegram-plane"></i>
+                </a>
+            </div>
+        </div>
+    `;
+    return div;
+}
+
+function getStoreIcon(store) {
+    const s = store.toLowerCase();
+    if (s.includes('amazon')) return '<i class="fab fa-amazon"></i>';
+    if (s.includes('mercado')) return '<i class="fas fa-handshake"></i>';
+    if (s.includes('shopee')) return '<i class="fas fa-bag-shopping"></i>';
+    return '<i class="fas fa-store"></i>';
+}
+
+// --- TEMA E UX ---
+function initTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.body.classList.add('dark-mode');
+    }
+
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    });
+}
+
+function initBackToTop() {
+    const btn = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) btn.classList.add('show');
+        else btn.classList.remove('show');
+    });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
+
+// --- BUSCA E FILTROS ---
+function initSearch() {
+    const input = document.getElementById('search-input');
+    input.addEventListener('input', filterProducts);
+
+    document.querySelectorAll('.chip, .chip-cat').forEach(chip => {
+        chip.addEventListener('click', () => {
+            if (chip.classList.contains('chip')) {
+                const isActive = chip.classList.contains('active');
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                if (!isActive) chip.classList.add('active');
+            } else {
+                document.querySelectorAll('.chip-cat').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            }
+            filterProducts();
         });
     });
 }
 
-// Lógica de Compartilhamento
-function shareProduct(element, platform) {
-    const card = element.closest('.card');
-    const title = card.querySelector('h3').innerText;
-    const price = card.querySelector('.price').innerText.split('\n')[0];
-    const link = card.querySelector('.btn-afiliado').href;
+function filterProducts() {
+    const searchText = document.getElementById('search-input').value.toLowerCase();
+    const storeFilter = document.querySelector('.chip.active')?.getAttribute('data-filter') || 'all';
+    const catFilter = document.querySelector('.chip-cat.active')?.getAttribute('data-cat') || 'all';
+    const favorites = JSON.parse(localStorage.getItem('mdecarol_favorites') || '[]');
 
-    const message = `🔥 *Achadinho na Mar de Carol!* \n\n✨ ${title}\n💰 *${price}*\n\n👉 Confira aqui: ${link}`;
-    const encodedMessage = encodeURIComponent(message);
-    const encodedLink = encodeURIComponent(link);
+    document.querySelectorAll('.card').forEach(card => {
+        const title = card.querySelector('h3').innerText.toLowerCase();
+        const store = card.getAttribute('data-store');
+        const cat = card.getAttribute('data-category');
 
-    let url = '';
-    if (platform === 'whatsapp') {
-        url = `https://wa.me/?text=${encodedMessage}`;
-    } else if (platform === 'telegram') {
-        url = `https://t.me/share/url?url=${encodedLink}&text=${encodedMessage}`;
-    }
+        const matchesSearch = title.includes(searchText);
+        let matchesStore = storeFilter === 'all' || store === storeFilter;
+        if (storeFilter === 'favorites') matchesStore = favorites.includes(card.querySelector('h3').innerText);
 
-    if (url) {
-        window.open(url, '_blank');
-    }
-}
+        const matchesCat = catFilter === 'all' || cat.includes(catFilter);
 
-// Lógica de Captura de Leads
-const leadForm = document.getElementById('lead-form');
-if (leadForm) {
-    leadForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = leadForm.querySelector('.lead-input');
-        const toast = document.getElementById('copy-toast');
-
-        console.log('Lead capturado:', input.value);
-
-        if (toast) {
-            const originalContent = toast.innerHTML;
-            toast.innerHTML = '<i class="fas fa-check-circle" style="color: #4ade80;"></i> Inscrição realizada com sucesso!';
-            toast.style.opacity = '1';
-            input.value = '';
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    toast.innerHTML = originalContent;
-                }, 300);
-            }, 3000);
-        }
+        if (matchesSearch && matchesStore && matchesCat) card.classList.remove('hidden');
+        else card.classList.add('hidden');
     });
 }
 
-// Lógica de Contadores Regressivos
-function updateTimers() {
-    const now = new Date().getTime();
-    document.querySelectorAll('.countdown-container').forEach(container => {
-        const expiryDate = new Date(container.getAttribute('data-expiry')).getTime();
-        const timeLeft = expiryDate - now;
-
-        if (timeLeft <= 0) {
-            container.innerHTML = '<span class="countdown-values" style="color: var(--text-muted)">OFERTA ENCERRADA</span>';
-            container.classList.remove('pulse-timer');
-            return;
-        }
-
-        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-        const display = `${days > 0 ? days + 'd ' : ''}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        const valSpan = container.querySelector('.countdown-values');
-        if (valSpan) valSpan.innerText = display;
-    });
-}
-
-setInterval(updateTimers, 1000);
-updateTimers();
-
-// Lógica de Prova Social (Social Proof)
-const spData = [
-    { title: "Maria de Curitiba", text: "Acabou de aproveitar a oferta da Smart TV!", icon: "fa-tv" },
-    { title: "João de Salvador", text: "Comprou o Fone Bluetooth com desconto!", icon: "fa-headphones" },
-    { title: "Ana de Brasília", text: "Garantiu a Geladeira Frost Free 340L!", icon: "fa-snowflake" },
-    { title: "Ricardo de Porto Alegre", text: "Acaba de ver as ofertas da Shopee.", icon: "fa-eye" },
-    { title: "42 pessoas vendo agora", text: "As ofertas da Amazon estão bombando!", icon: "fa-fire" },
-    { title: "Alguém de Manaus", text: "Pegou o Tablet com frete grátis!", icon: "fa-tablet-alt" },
-    { title: "Carla de Belo Horizonte", text: "Assinou o alerta de ofertas agora há pouco.", icon: "fa-bell" },
-    { title: "Desconto Exclusivo", text: "Um cupom Shopee acaba de ser liberado!", icon: "fa-tag" }
-];
-
-const spToast = document.getElementById('social-proof');
-const spTitle = document.getElementById('sp-title');
-const spText = document.getElementById('sp-text');
-
-function showSocialProof() {
-    if (!spToast || !spTitle || !spText) return;
-    
-    const event = spData[Math.floor(Math.random() * spData.length)];
-    const spIconGroup = spToast.querySelector('.sp-icon i');
-
-    spTitle.innerText = event.title;
-    spText.innerText = event.text;
-    if (spIconGroup) spIconGroup.className = `fas ${event.icon}`;
-
-    spToast.classList.add('show');
-
-    setTimeout(() => {
-        spToast.classList.remove('show');
-    }, 6000);
-}
-
-function startSocialProofLoop() {
-    setTimeout(() => {
-        showSocialProof();
-        const nextInterval = Math.floor(Math.random() * 10000) + 15000;
-        setInterval(() => {
-            showSocialProof();
-        }, nextInterval);
-    }, 5000);
-}
-
-startSocialProofLoop();
-
-// Lógica de Favoritos (LocalStorage)
+// --- FAVORITOS ---
 function initFavorites() {
     const favorites = JSON.parse(localStorage.getItem('mdecarol_favorites') || '[]');
-    const countElement = document.getElementById('fav-count');
-    if (countElement) countElement.innerText = favorites.length;
+    document.getElementById('fav-count').innerText = favorites.length;
 
     document.querySelectorAll('.card').forEach(card => {
         const title = card.querySelector('h3').innerText;
-        const heartBtn = card.querySelector('.btn-favorite');
+        const btn = card.querySelector('.btn-favorite');
 
-        if (favorites.includes(title)) {
-            heartBtn.classList.add('is-favorite');
-        }
+        if (favorites.includes(title)) btn.classList.add('is-favorite');
 
-        heartBtn.addEventListener('click', (e) => {
-            e.preventDefault();
+        btn.onclick = (e) => {
             e.stopPropagation();
-
-            let currentFavs = JSON.parse(localStorage.getItem('mdecarol_favorites') || '[]');
-
-            if (currentFavs.includes(title)) {
-                currentFavs = currentFavs.filter(f => f !== title);
-                heartBtn.classList.remove('is-favorite');
+            let favs = JSON.parse(localStorage.getItem('mdecarol_favorites') || '[]');
+            if (favs.includes(title)) {
+                favs = favs.filter(f => f !== title);
+                btn.classList.remove('is-favorite');
             } else {
-                currentFavs.push(title);
-                heartBtn.classList.add('is-favorite');
+                favs.push(title);
+                btn.classList.add('is-favorite');
             }
-
-            localStorage.setItem('mdecarol_favorites', JSON.stringify(currentFavs));
-            if (countElement) countElement.innerText = currentFavs.length;
-
-            const activeChip = document.querySelector('.chip.active');
-            if (activeChip && activeChip.getAttribute('data-filter') === 'favorites') {
-                filterProducts();
-            }
-        });
+            localStorage.setItem('mdecarol_favorites', JSON.stringify(favs));
+            document.getElementById('fav-count').innerText = favs.length;
+            if (document.querySelector('.chip.active')?.getAttribute('data-filter') === 'favorites') filterProducts();
+        };
     });
 }
 
-// Lógica de Link Cloaking
+// --- LINK CLOAKING ---
 function initLinkCloaking() {
     const overlay = document.getElementById('redirect-overlay');
-    const storeLogo = document.getElementById('redirect-store-logo');
-    const message = document.getElementById('redirect-message');
-
     document.querySelectorAll('.btn-cloak').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.onclick = (e) => {
             e.preventDefault();
-            const realUrl = btn.getAttribute('data-url');
-            const storeName = btn.getAttribute('data-store-name');
+            const url = btn.getAttribute('data-url');
+            const store = btn.getAttribute('data-store-name');
 
-            let iconHtml = '<i class="fab fa-amazon"></i>';
-            if (storeName === 'Mercado Livre') iconHtml = '<i class="fas fa-handshake"></i>';
-            if (storeName === 'Shopee') iconHtml = '<i class="fas fa-bag-shopping"></i>';
-
-            if (storeLogo) storeLogo.innerHTML = iconHtml;
-            if (message) message.innerText = `Estamos te levando para a ${storeName}...`;
-
-            if (overlay) overlay.classList.add('active');
+            document.getElementById('redirect-store-logo').innerHTML = getStoreIcon(store);
+            document.getElementById('redirect-message').innerText = `Levando você para a ${store}...`;
+            overlay.classList.add('active');
 
             setTimeout(() => {
-                window.open(realUrl, '_blank');
-                setTimeout(() => {
-                    if (overlay) overlay.classList.remove('active');
-                }, 500);
+                window.open(url, '_blank');
+                setTimeout(() => overlay.classList.remove('active'), 500);
             }, 1200);
-        });
+        };
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    initFavorites();
-    initLinkCloaking();
-});
+// --- UTILITÁRIOS ---
+function initLazyLoading() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.classList.remove('skeleton');
+                observer.unobserve(img);
+            }
+        });
+    }, { rootMargin: '100px' });
+    document.querySelectorAll('.card-img').forEach(img => observer.observe(img));
+}
+
+function updateTimers() {
+    setInterval(() => {
+        const now = new Date().getTime();
+        document.querySelectorAll('.countdown-container').forEach(container => {
+            const expiry = new Date(container.getAttribute('data-expiry')).getTime();
+            const diff = expiry - now;
+            if (diff <= 0) {
+                container.innerHTML = 'OFERTA ENCERRADA';
+                return;
+            }
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            container.querySelector('.countdown-values').innerText = `${d > 0 ? d + 'd ' : ''}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        });
+    }, 1000);
+}
+
+// Share Logic
+function shareProduct(element, platform) {
+    const card = element.closest('.card');
+    const title = card.querySelector('h3').innerText;
+    const price = card.querySelector('.price').innerText;
+    const link = card.querySelector('.btn-afiliado').getAttribute('data-url');
+    const msg = encodeURIComponent(`🔥 *Achadinho na Mar de Carol!* \n\n✨ ${title}\n💰 *${price}*\n\n👉 Confira aqui: ${link}`);
+    window.open(platform === 'whatsapp' ? `https://wa.me/?text=${msg}` : `https://t.me/share/url?url=${link}&text=${msg}`, '_blank');
+}
