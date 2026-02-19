@@ -55,21 +55,57 @@ async function loadProducts() {
 }
 
 function parseCSV(csv) {
-    const lines = csv.split('\n');
-    const result = [];
-    const headers = lines[0].split(',');
+    const rows = [];
+    let currentCell = '';
+    let inQuotes = false;
+    let currentRow = [];
 
-    for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-        const obj = {};
-        const currentline = lines[i].split(',');
+    // Normalizar quebras de linha
+    const data = csv.replace(/\r/g, '');
 
-        headers.forEach((header, index) => {
-            obj[header.trim()] = currentline[index]?.trim();
-        });
-        result.push(obj);
+    for (let i = 0; i < data.length; i++) {
+        const char = data[i];
+        const nextChar = data[i + 1];
+
+        if (inQuotes) {
+            if (char === '"' && nextChar === '"') {
+                currentCell += '"';
+                i++;
+            } else if (char === '"') {
+                inQuotes = false;
+            } else {
+                currentCell += char;
+            }
+        } else {
+            if (char === '"') {
+                inQuotes = true;
+            } else if (char === ',') {
+                currentRow.push(currentCell.trim());
+                currentCell = '';
+            } else if (char === '\n') {
+                currentRow.push(currentCell.trim());
+                rows.push(currentRow);
+                currentRow = [];
+                currentCell = '';
+            } else {
+                currentCell += char;
+            }
+        }
     }
-    return result;
+    // Adicionar última linha/célula
+    if (currentCell !== '' || currentRow.length > 0) {
+        currentRow.push(currentCell.trim());
+        rows.push(currentRow);
+    }
+
+    const headers = rows[0] || [];
+    return rows.slice(1).filter(r => r.length >= headers.length).map(r => {
+        const obj = {};
+        headers.forEach((h, idx) => {
+            obj[h.trim()] = r[idx] || '';
+        });
+        return obj;
+    });
 }
 
 function renderProducts(products) {
@@ -91,38 +127,65 @@ function renderProducts(products) {
 function createProductCard(p) {
     const div = document.createElement('div');
     div.className = 'card';
-    div.setAttribute('data-store', p.Loja.toLowerCase().replace(' ', ''));
-    div.setAttribute('data-category', p.Categoria.toLowerCase());
 
-    const storeIcon = getStoreIcon(p.Loja);
-    const badgeHtml = p.Badge ? `<div class="promo-badge badge-${p.BadgeTipo}"><i class="fas fa-bolt"></i> ${p.Badge}</div>` : '';
-    const expiryHtml = p.Expiry ? `
-        <div class="countdown-container pulse-timer" data-expiry="${p.Expiry}">
+    // Função auxiliar para pegar valores independente de maiúsculas/minúsculas no cabeçalho
+    const getter = (keys) => {
+        const found = Object.keys(p).find(k => keys.includes(k.trim()));
+        return found ? p[found] : '';
+    };
+
+    const loja = getter(['Loja', 'loja']) || 'Loja';
+    const categoria = getter(['Categoria', 'categoria']) || 'geral';
+    const titulo = getter(['Titulo', 'titulo']) || 'Produto';
+    const preco = getter(['PrecoAtual', 'precoatual']) || '0,00';
+    const precoAntigo = getter(['PrecoAntigo', 'precoantigo']);
+    const linkReal = getter(['LinkReal', 'linkreal']) || '#';
+    const badge = getter(['Badge', 'badge']);
+    const badgeTipo = getter(['BadgeTipo', 'badgetipo']) || 'venda';
+
+    div.setAttribute('data-store', loja.toLowerCase().replace(/\s/g, ''));
+    div.setAttribute('data-category', categoria.toLowerCase());
+
+    const storeIcon = getStoreIcon(loja);
+    const badgeHtml = badge ? `<div class="promo-badge badge-${badgeTipo}"><i class="fas fa-bolt"></i> ${badge}</div>` : '';
+
+    // Tratamento de data robusto (Ex: 20280303 18:12:12 ou 2028030318:12:12)
+    let expiry = (getter(['Expiry', 'expiry']) || '').trim();
+    if (expiry) {
+        // Tenta capturar YYYYMMDD e a hora (HH:MM:SS)
+        const match = expiry.match(/^(\d{4})(\d{2})(\d{2})[\s\-T]?(\d{1,2}:\d{2}:\d{2})?$/);
+        if (match) {
+            expiry = `${match[1]}-${match[2]}-${match[3]}T${match[4] || '00:00:00'}`;
+        }
+    }
+
+    const expiryHtml = (expiry && !isNaN(new Date(expiry).getTime())) ? `
+        <div class="countdown-container pulse-timer" data-expiry="${expiry}">
             <span class="countdown-label"><i class="fas fa-clock"></i> Expira em:</span>
             <span class="countdown-values">--:--:--</span>
         </div>` : '';
 
     div.innerHTML = `
-        <div class="card-img skeleton" style="background-image: url('${p.LinkImagem}')">
+        <div class="card-img skeleton" style="background-image: url('${getter(['LinkImagem', 'linkimagem']) || ''}')">
             <button class="btn-favorite" aria-label="Adicionar aos favoritos">
                 <i class="fas fa-heart"></i>
             </button>
             ${badgeHtml}
-            <span class="card-tag">${storeIcon} ${p.Loja}</span>
+            <span class="card-tag">${storeIcon} ${loja}</span>
         </div>
         <div class="card-content">
-            <h3>${p.Titulo}</h3>
-            <div class="price">R$ ${p.PrecoAtual} ${p.PrecoAntigo ? `<small>R$ ${p.PrecoAntigo}</small>` : ''}</div>
+            <h3>${titulo}</h3>
+            <div class="price">R$ ${preco} ${precoAntigo ? `<small>R$ ${precoAntigo}</small>` : ''}</div>
             ${expiryHtml}
-            <a href="#" class="btn-afiliado ${p.Loja.toLowerCase().replace(' ', '')} btn-cloak" 
-               data-url="${p.LinkReal}" data-store-name="${p.Loja}">
-               ${storeIcon} VER OFERTA NA ${p.Loja.toUpperCase()}
+            <a href="#" class="btn-afiliado ${loja.toLowerCase().replace(/\s/g, '')} btn-cloak" 
+               data-url="${linkReal}" data-store-name="${loja}">
+               ${storeIcon} VER OFERTA NA ${loja.toUpperCase()}
             </a>
             <div class="share-actions">
-                <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')">
+                <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')" data-link="${linkReal}" data-title="${titulo}" data-price="${preco}">
                     <i class="fab fa-whatsapp"></i>
                 </a>
-                <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')">
+                <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')" data-link="${linkReal}" data-title="${titulo}" data-price="${preco}">
                     <i class="fab fa-telegram-plane"></i>
                 </a>
             </div>
@@ -270,13 +333,18 @@ function initLazyLoading() {
 }
 
 function updateTimers() {
-    setInterval(() => {
+    if (window.timerInterval) clearInterval(window.timerInterval);
+    window.timerInterval = setInterval(() => {
         const now = new Date().getTime();
         document.querySelectorAll('.countdown-container').forEach(container => {
-            const expiry = new Date(container.getAttribute('data-expiry')).getTime();
+            const expiryStr = container.getAttribute('data-expiry');
+            const expiry = new Date(expiryStr).getTime();
+
+            if (isNaN(expiry)) return;
+
             const diff = expiry - now;
             if (diff <= 0) {
-                container.innerHTML = 'OFERTA ENCERRADA';
+                container.innerHTML = '<span class="countdown-label" style="color:#ef4444!important;"><i class="fas fa-circle-xmark"></i> OFERTA ENCERRADA</span>';
                 return;
             }
             const d = Math.floor(diff / (1000 * 60 * 60 * 24));
