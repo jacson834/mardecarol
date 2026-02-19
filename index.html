@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ofertas Parceiras | Mar de Carol</title>
+    <meta name="description"
+        content="Encontre as melhores ofertas e promoções da Amazon, Mercado Livre e Shopee. Links exclusivos e verificados de afiliado.">
+    <meta name="keywords"
+        content="ofertas, descontos, amazon prime, mercado livre full, shopee frete gratis, promoções">
+    <meta property="og:title" content="Ofertas Parceiras | Mar de Carol">
+    <meta property="og:description" content="Economize agora com links exclusivos nos maiores marketplaces do Brasil.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#ff7b00">
+    <link rel="shortcut icon"
+        href="https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/icon_favicon_1_32.png"
+        type="image/x-icon">
+    <!-- Font Awesome 6 (Free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+    </button>
+
+    <button class="back-to-top" id="back-to-top" aria-label="Voltar ao topo">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Social Proof Notification -->
+    <div id="social-proof" class="social-proof-toast">
+        <div class="sp-icon"><i class="fas fa-shopping-bag"></i></div>
+        <div class="sp-content">
+            <span class="sp-title" id="sp-title">Alguém de São Paulo</span>
+            <span class="sp-text" id="sp-text">Acabou de comprar uma Smart TV!</span>
+        </div>
+    </div>
+
+    <!-- Redirect Overlay -->
+    <div id="redirect-overlay" class="redirect-overlay">
+        <div class="redirect-box">
+            <div class="store-logo-redirect" id="redirect-store-logo">
+                <i class="fab fa-amazon"></i>
+            </div>
+            <div class="redirect-title">Tudo pronto!</div>
+            <div class="redirect-text" id="redirect-message">Estamos te levando para a Amazon...</div>
+            <div class="loader-line">
+                <div class="loader-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="landing-container">
+        <!-- cabeçalho principal -->
+        <div class="hero">
+            <h1>
+                <span class="highlight">Ofertas imperdíveis</span><br>Mar de Carol
+            </h1>
+            <p>
+                <i class="fas fa-check-circle" style="color:#16a34a;"></i>
+                Os melhores produtos de <strong>Amazon, Mercado Livre e Shopee</strong> com links exclusivos de
+                afiliado.
+            </p>
+            <!-- badge de transparência afiliado -->
+            <div class="disclaimer-badge">
+                <i class="fas fa-hand-holding-heart"></i>
+                <span>Comprando através dos nossos links, você ajuda a manter o site (sem pagar nada a mais por
+                    isso).</span>
+                <i class="fas fa-mug-hot"></i>
+            </div>
+        </div>
+
+        <!-- Barra de Busca -->
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="search-input" class="search-input"
+                placeholder="Olá! O que você está procurando hoje?">
+        </div>
+
+        <!-- chips com ícones das lojas -->
+        <div class="store-chips">
+            <div class="chip favorites" data-filter="favorites">
+                <i class="fas fa-heart"></i> Meus Desejos <span class="fav-count" id="fav-count">0</span>
+            </div>
+            <div class="chip amazon" data-filter="amazon"><i class="fab fa-amazon"></i> Amazon</div>
+            <div class="chip mercadolivre" data-filter="mercadolivre"><i class="fas fa-handshake"></i> Mercado Livre
+            </div>
+            <div class="chip shopee" data-filter="shopee"><i class="fas fa-bag-shopping"></i> Shopee</div>
+        </div>
+
+        <!-- Chips de Categorias -->
+        <div class="category-wrapper" id="category-filters">
+            <div class="chip-cat active" data-cat="all">🔥 Tudo</div>
+            <div class="chip-cat" data-cat="tecnologia">📱 Tecnologia</div>
+            <div class="chip-cat" data-cat="gamer">🎮 Gamer</div>
+            <div class="chip-cat" data-cat="casa">🏠 Casa</div>
+            <div class="chip-cat" data-cat="audio">🎧 Áudio</div>
+        </div>
+
+        <!-- grade de cards com ofertas simuladas (imagens meramente ilustrativas) -->
+        <div class="ofertas-grid">
+            <!-- card 1 - Amazon -->
+            <div class="card" data-store="amazon" data-category="tecnologia">
+                <div class="card-img img-tv-multi skeleton" data-lazy="img-tv-multi">
+                    <button class="btn-favorite" aria-label="Adicionar aos favoritos">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <div class="promo-badge badge-venda">
+                        <i class="fas fa-fire"></i> Mais Vendido
+                    </div>
+                    <span class="card-tag"><i class="fab fa-amazon"></i> Amazon · Envio Prime</span>
+                </div>
+                <div class="card-content">
+                    <h3>Smart TV Multi 50" 4K Google TV</h3>
+                    <div class="price">R$ 2.849 <small>R$ 3.299</small></div>
+
+                    <div class="countdown-container pulse-timer" data-expiry="2026-02-21T00:00:00">
+                        <span class="countdown-label"><i class="fas fa-clock"></i> Expira em:</span>
+                        <span class="countdown-values">00:00:00:00</span>
+                    </div>
+
+                    <a href="https://mardecarol.com.br/oferta/tv-multi-4k" class="btn-afiliado amazon btn-cloak"
+                        data-url="https://www.amazon.com.br/Smart-Multi-Compat%C3%ADvel-Alexa-Google/dp/B0FLRC6T9L"
+                        data-store-name="Amazon" target="_blank" rel="nofollow sponsored">
+                        <i class="fab fa-amazon"></i> VER OFERTA NA AMAZON
+                    </a>
+                    <div class="share-actions">
+                        <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')"
+                            title="Postar no WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')"
+                            title="Postar no Telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- card 2 - Mercado Livre -->
+            <div class="card" data-store="mercadolivre" data-category="audio gamer">
+                <div class="card-img img-fone-ml skeleton" data-lazy="img-fone-ml">
+                    <button class="btn-favorite" aria-label="Adicionar aos favoritos">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <div class="promo-badge badge-preco">
+                        <i class="fas fa-tags"></i> Menos de R$ 350
+                    </div>
+                    <span class="card-tag"><i class="fas fa-handshake"></i> Mercado Livre · Full</span>
+                </div>
+                <div class="card-content">
+                    <h3>Fone Bluetooth Cancel. Ruído</h3>
+                    <div class="price">R$ 329 <small>R$ 479</small></div>
+
+                    <div class="countdown-container" data-expiry="2026-02-20T18:00:00">
+                        <span class="countdown-label"><i class="fas fa-clock"></i> Expira em:</span>
+                        <span class="countdown-values">00:00:00:00</span>
+                    </div>
+                    <a href="https://mardecarol.com.br/oferta/fone-bluetooth-top"
+                        class="btn-afiliado mercadolivre btn-cloak" data-url="#" data-store-name="Mercado Livre"
+                        target="_blank" rel="nofollow sponsored">
+                        <i class="fas fa-handshake"></i> COMPRAR NO ML
+                    </a>
+                    <div class="share-actions">
+                        <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')"
+                            title="Postar no WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')"
+                            title="Postar no Telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- card 3 - Shopee -->
+            <div class="card" data-store="shopee" data-category="tecnologia">
+                <div class="card-img mock3 skeleton" data-lazy="mock3">
+                    <button class="btn-favorite" aria-label="Adicionar aos favoritos">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <span class="card-tag"><i class="fas fa-bag-shopping"></i> Shopee · Envio grátis</span>
+                </div>
+                <div class="card-content">
+                    <h3>Smartphone 128GB + Carregador</h3>
+                    <div class="price">R$ 1.599 <small>R$ 1.999</small></div>
+                    <a href="https://mardecarol.com.br/oferta/smartphone-128gb" class="btn-afiliado shopee btn-cloak"
+                        data-url="#" data-store-name="Shopee" target="_blank" rel="nofollow sponsored">
+                        <i class="fas fa-bag-shopping"></i> OFERTA SHOPEE
+                    </a>
+                    <div class="share-actions">
+                        <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')"
+                            title="Postar no WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')"
+                            title="Postar no Telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- card 4 - Amazon (eletro) -->
+            <div class="card" data-store="amazon" data-category="casa">
+                <div class="card-img mock4 skeleton" data-lazy="mock4">
+                    <button class="btn-favorite" aria-label="Adicionar aos favoritos">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <div class="promo-badge badge-destaque">
+                        <i class="fas fa-star"></i> Escolha Amazon
+                    </div>
+                    <span class="card-tag"><i class="fab fa-amazon"></i> Amazon · Mais vendidos</span>
+                </div>
+                <div class="card-content">
+                    <h3>Geladeira Frost Free 340L</h3>
+                    <div class="price">R$ 3.129 <small>R$ 3.690</small></div>
+
+                    <div class="countdown-container" data-expiry="2026-02-21T10:00:00">
+                        <span class="countdown-label"><i class="fas fa-clock"></i> Expira em:</span>
+                        <span class="countdown-values">00:00:00:00</span>
+                    </div>
+                    <a href="https://mardecarol.com.br/oferta/geladeira-frost-free"
+                        class="btn-afiliado amazon btn-cloak" data-url="#" data-store-name="Amazon" target="_blank"
+                        rel="nofollow sponsored">
+                        <i class="fab fa-amazon"></i> CONFERIR NA AMAZON
+                    </a>
+                    <div class="share-actions">
+                        <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')"
+                            title="Postar no WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')"
+                            title="Postar no Telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- card 5 - Mercado Livre -->
+            <div class="card" data-store="mercadolivre" data-category="tecnologia gamer">
+                <div class="card-img mock5 skeleton" data-lazy="mock5">
+                    <button class="btn-favorite" aria-label="Adicionar aos favoritos">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <span class="card-tag"><i class="fas fa-handshake"></i> Mercado Livre · 12x s/juros</span>
+                </div>
+                <div class="card-content">
+                    <h3>Notebook Intel i5 8GB SSD 256GB</h3>
+                    <div class="price">R$ 2.847 <small>R$ 3.399</small></div>
+                    <a href="https://mardecarol.com.br/oferta/notebook-intel-i5"
+                        class="btn-afiliado mercadolivre btn-cloak" data-url="#" data-store-name="Mercado Livre"
+                        target="_blank" rel="nofollow sponsored">
+                        <i class="fas fa-handshake"></i> VER NO ML
+                    </a>
+                    <div class="share-actions">
+                        <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')"
+                            title="Postar no WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')"
+                            title="Postar no Telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- card 6 - Shopee -->
+            <div class="card" data-store="shopee" data-category="tecnologia">
+                <div class="card-img mock6 skeleton" data-lazy="mock6">
+                    <button class="btn-favorite" aria-label="Adicionar aos favoritos">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <div class="promo-badge badge-preco">
+                        <i class="fas fa-tags"></i> Menos de R$ 1.200
+                    </div>
+                    <span class="card-tag"><i class="fas fa-bag-shopping"></i> Shopee · Cupom extra</span>
+                </div>
+                <div class="card-content">
+                    <h3>Tablet 10.4" 64GB Wifi + Capa</h3>
+                    <div class="price">R$ 1.197 <small>R$ 1.599</small></div>
+                    <a href="https://mardecarol.com.br/oferta/tablet-10-polegadas" class="btn-afiliado shopee btn-cloak"
+                        data-url="#" data-store-name="Shopee" target="_blank" rel="nofollow sponsored">
+                        <i class="fas fa-bag-shopping"></i> APROVEITAR
+                    </a>
+                    <div class="share-actions">
+                        <a href="javascript:void(0)" class="share-btn whatsapp" onclick="shareProduct(this, 'whatsapp')"
+                            title="Postar no WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="share-btn telegram" onclick="shareProduct(this, 'telegram')"
+                            title="Postar no Telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- vitrine de aplicativo / categorias (apelo visual) -->
+        <div class="vitrine-app">
+            <div class="vitrine-text">
+                <h2>💰 Economize nas suas compras</h2>
+                <p><i class="fa-regular fa-bell" style="margin-right: 6px;"></i> Ative o alerta de promoções e não perca
+                    nenhuma oferta relâmpago das nossas parceiras.</p>
+                <div class="app-stores">
+                    <span class="qr-sim"><i class="fab fa-google-play"></i> Google Play</span>
+                    <span class="qr-sim"><i class="fab fa-apple"></i> App Store</span>
+                    <span class="qr-sim"><i class="fas fa-qrcode"></i> QR code</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção Sobre a Carol -->
+    <section class="about-carol">
+        <div class="carol-img-container">
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200&h=200"
+                alt="Carol" class="carol-img">
+        </div>
+        <div class="carol-info">
+            <h2>Olá, eu sou a <span class="highlight">Carol</span>! 👋</h2>
+            <p>Economista por formação e caçadora de ofertas por paixão. Seleciono diariamente os melhores achadinhos da
+                Amazon, Mercado Livre e Shopee para você economizar tempo e dinheiro, sem abrir mão da qualidade!</p>
+            <div class="carol-social">
+                <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-icon" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="#" class="social-icon" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- links de categorias rápidas (âncora visual) -->
+    <div class="cat-links">
+        <span class="cat-item"><i class="fas fa-mobile-alt"></i> Celulares</span>
+        <span class="cat-item"><i class="fas fa-tv"></i> TVs</span>
+        <span class="cat-item"><i class="fas fa-headphones"></i> Áudio</span>
+        <span class="cat-item"><i class="fas fa-laptop"></i> Informática</span>
+        <span class="cat-item"><i class="fas fa-robot"></i> Smart home</span>
+        <span class="cat-item"><i class="fas fa-tshirt"></i> Moda</span>
+    </div>
+
+    <!-- Seção de Captura de Leads -->
+    <section class="lead-capture">
+        <h2>📢 Ofertas exclusivas no seu WhatsApp!</h2>
+        <p>Seja o primeiro a receber cupons e promoções relâmpago. Não enviamos spam, apenas achadinhos reais.</p>
+        <form class="lead-form" id="lead-form">
+            <input type="text" class="lead-input" placeholder="Seu e-mail ou WhatsApp" required>
+            <button type="submit" class="lead-btn">Quero Receber!</button>
+        </form>
+    </section>
+
+    <!-- rodapé com informações legais -->
+    <div class="footer-affiliate">
+        <p>🔗 Links de afiliado: Amazon, Mercado Livre e Shopee. Os preços e estoque são referentes ao momento da
+            publicação e podem sofrer alterações.</p>
+        <p>
+            <a href="#"><i class="fas fa-file-contract"></i> Termos de uso</a> •
+            <a href="#"><i class="fas fa-shield-alt"></i> Política de privacidade</a> •
+            <a href="#"><i class="fas fa-envelope"></i> Contato</a>
+        </p>
+        <p style="font-size:0.85rem;">© 2025 · Landing page de exemplo para divulgação de afiliados. Todas as marcas
+            são propriedade de seus respectivos donos.</p>
+        <!-- selo extra -->
+        <span style="background: #e9f0f5; padding: 0.3rem 1.2rem; border-radius: 30px; font-size:0.8rem;"><i
+                class="fas fa-hand-peace"></i> Parceiro oficial verificado</span>
+    </div>
+
+    <!-- Alerta de "Copiado" para melhor UX -->
+    <div id="copy-toast"
+        style="position: fixed; bottom: 2rem; right: 2rem; background: #111; color: white; padding: 0.8rem 1.5rem; border-radius: 12px; opacity: 0; transition: opacity 0.3s; z-index: 1000; pointer-events: none; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-check-circle" style="color: #4ade80;"></i> Inscrição realizada com sucesso!
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/script.js"></script>
+
+    <!-- JSON-LD Structured Data (SEO Rich Snippets) -->
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "Smart TV Multi 50\" 4K Google TV",
+        "image": "https://m.media-amazon.com/images/I/61RV6khFSQL._AC_SL1000_.jpg",
+        "description": "Smart TV Multi 50 polegadas 4K com Google TV e comandos de voz.",
+        "brand": {
+          "@type": "Brand",
+          "name": "Multi"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": "https://www.amazon.com.br/Smart-Multi-Compat%C3%ADvel-Alexa-Google/dp/B0FLRC6T9L",
+          "priceCurrency": "BRL",
+          "price": "2849.00",
+          "availability": "https://schema.org/InStock"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "reviewCount": "1250"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "Fone Bluetooth Cancel. Ruído",
+        "image": "https://http2.mlstatic.com/D_NQ_NP_2X_716350-MLA95696281086_102025-F.webp",
+        "description": "Fone de ouvido Bluetooth com cancelamento ativo de ruído.",
+        "offers": {
+          "@type": "Offer",
+          "url": "#",
+          "priceCurrency": "BRL",
+          "price": "329.00",
+          "availability": "https://schema.org/InStock"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.7",
+          "reviewCount": "840"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "Smartphone 128GB + Carregador",
+        "image": "https://via.placeholder.com/400x200/ee4d2d/ffffff?text=Smartphone",
+        "description": "Smartphone moderno com 128GB de armazenamento e carregador incluso.",
+        "offers": {
+          "@type": "Offer",
+          "url": "#",
+          "priceCurrency": "BRL",
+          "price": "1599.00",
+          "availability": "https://schema.org/InStock"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.6",
+          "reviewCount": "2100"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "Geladeira Frost Free 340L",
+        "image": "https://via.placeholder.com/400x200/1e2b3a/ffffff?text=Geladeira",
+        "description": "Geladeira Frost Free de 340 litros com tecnologia de economia de energia.",
+        "offers": {
+          "@type": "Offer",
+          "url": "#",
+          "priceCurrency": "BRL",
+          "price": "3129.00",
+          "availability": "https://schema.org/InStock"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "450"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "Notebook Intel i5 8GB SSD 256GB",
+        "image": "https://via.placeholder.com/400x200/2db400/ffffff?text=Notebook",
+        "description": "Notebook potente com processador Intel i5, 8GB de RAM e SSD de 256GB.",
+        "offers": {
+          "@type": "Offer",
+          "url": "#",
+          "priceCurrency": "BRL",
+          "price": "2847.00",
+          "availability": "https://schema.org/InStock"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.5",
+          "reviewCount": "320"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "Tablet 10.4\" 64GB Wifi + Capa",
+        "image": "https://via.placeholder.com/400x200/ee4d2d/ffffff?text=Tablet",
+        "description": "Tablet de 10.4 polegadas com 64GB e capa de proteção inclusa.",
+        "offers": {
+          "@type": "Offer",
+          "url": "#",
+          "priceCurrency": "BRL",
+          "price": "1197.00",
+          "availability": "https://schema.org/InStock"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.7",
+          "reviewCount": "580"
+        }
+      }
+    ]
+    </script>
+</body>
+
+</html>
