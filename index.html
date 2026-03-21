@@ -134,7 +134,7 @@
     <!-- Seção Sobre a Carol -->
     <section class="about-carol">
         <div class="carol-img-container">
-            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200&h=200"
+            <img src="carol.jpeg"
                 alt="Carol" class="carol-img">
         </div>
         <div class="carol-info">
@@ -164,13 +164,14 @@
         <h2>📢 Ofertas exclusivas no seu WhatsApp!</h2>
         <p>Seja o primeiro a receber cupons e promoções relâmpago. Não enviamos spam, apenas achadinhos reais.</p>
         <form class="lead-form" id="lead-form">
-            <input type="text" class="lead-input" placeholder="Seu e-mail ou WhatsApp" required>
+            <label for="lead-contact" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">Seu e-mail ou WhatsApp</label>
+            <input type="text" id="lead-contact" class="lead-input" placeholder="Seu e-mail ou WhatsApp" required>
             <button type="submit" class="lead-btn">Quero Receber!</button>
         </form>
     </section>
 
     <!-- rodapé com informações legais -->
-    <div class="footer-affiliate">
+    <footer class="footer-affiliate">
         <p>🔗 Links de afiliado: Amazon, Mercado Livre e Shopee. Os preços e estoque são referentes ao momento da
             publicação e podem sofrer alterações.</p>
         <p>
@@ -183,7 +184,7 @@
         <!-- selo extra -->
         <span style="background: #e9f0f5; padding: 0.3rem 1.2rem; border-radius: 30px; font-size:0.8rem;"><i
                 class="fas fa-hand-peace"></i> Parceiro oficial verificado</span>
-    </div>
+    </footer>
 
     <!-- Alerta de "Copiado" para melhor UX -->
     <div id="copy-toast"
